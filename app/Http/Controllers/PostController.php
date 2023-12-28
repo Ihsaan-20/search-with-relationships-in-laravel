@@ -21,21 +21,21 @@ class PostController extends Controller
     public function search(Request $request)
     {
         // dd($request->all());
-        $search = trim($request->input('search'));
-        $posts = Post::where(function ($q) use ($search){
-            $q->where('title', 'like', "%$search%")
-            ->orWhere('short_description', 'like', "%$search%");
-        })
-        ->orWhereHas('user',function ($q) use ($search){
-            $q->where('name', 'like', "%$search%");
-        })
-        ->orWhereHas('category',function ($q) use ($search){
-            $q->where('name', 'like', "%$search%");
-        })
-        ->get();
+         $search = $request->input('search');
+        $posts = Post::with('user', 'category')
+            ->where(function ($query) use ($search) {
+                $query->where('title', 'like', "%$search%")
+                    ->orWhere('short_description', 'like', "%$search%");
+            })
+            ->orWhereHas('user', function ($query) use ($search) {
+                $query->where('name', 'like', "%$search%");
+            })
+            ->orWhereHas('category', function ($query) use ($search) {
+                $query->where('name', 'like', "%$search%");
+            })
+            ->get();
 
         return view('posts.index', compact('posts', 'search'));
-
 
     }
     /**
